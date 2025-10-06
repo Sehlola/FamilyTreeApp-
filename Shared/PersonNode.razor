@@ -1,0 +1,53 @@
+@using FamilyTreeApp.Data
+@inject FamilyService FamilyService      <!-- Gives access to family data -->
+@inject NavigationManager NavigationManager  <!-- Lets us move between pages -->
+
+<!-- Display one person and their children -->
+<div class="person-node">
+    <div class="person-card">
+        <div class="person-name">@Person.Name</div>
+        <div class="person-actions">
+            <button class="btn-edit" @onclick="Edit">Edit</button>
+        </div>
+    </div>
+
+    <!-- If children are not loaded yet -->
+    @if (children == null)
+    {
+        <div class="children-loading">Loading...</div>
+    }
+    <!-- If person has children, show them in a list -->
+    else if (children.Any())
+    {
+        <ul class="children-list">
+            @foreach (var c in children)
+            {
+                <li>
+                    <!-- Show each child as its own PersonNode -->
+                    <PersonNode Person="c" />
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    // The person to display
+    [Parameter]
+    public Person Person { get; set; } = default!;
+
+    // List of this person's direct children
+    private List<Person> children = null!;
+
+    // When the component loads, get the person's children from the database
+    protected override async Task OnInitializedAsync()
+    {
+        children = await FamilyService.GetChildrenAsync(Person.Id);
+    }
+
+    // Go to the edit page for this person
+    private void Edit()
+    {
+        NavigationManager.NavigateTo($"/edit/{Person.Id}");
+    }
+}
