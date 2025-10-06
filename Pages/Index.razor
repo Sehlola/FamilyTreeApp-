@@ -1,9 +1,42 @@
 ﻿@page "/"
+@using FamilyTreeApp.Data
+@inject FamilyService FamilyService
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Family Tree</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container">
+    <h1>Family Tree</h1>
+    <p class="lead">A visual view of the seeded family. Click Edit to modify a person.</p>
 
-Welcome to your new app.
+    @if (roots == null)
+    {
+        <p>Loading family tree...</p>
+    }
+    else if (!roots.Any())
+    {
+        <p>No family members found.</p>
+    }
+    else
+    {
+        <div class="family-tree">
+            <ul class="tree-root">
+                @foreach (var root in roots)
+                {
+                    <li>
+                        <PersonNode Person="root" />
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private List<Person>? roots;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load top-level persons (ParentId == null)
+        roots = await FamilyService.GetRootPersonsAsync();
+    }
+}
